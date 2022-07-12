@@ -16,6 +16,8 @@ class Client extends Model
         'number',
         'neighborhood',
         'email',
+        'detaille_service',
+        'service_id',
     ];
 
     public function notifications(){

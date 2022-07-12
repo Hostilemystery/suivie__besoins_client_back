@@ -20,7 +20,7 @@ class GestionUtilisateur extends Controller
     public function index()
     {
         $utilisateur = User::leftJoin('type_utilisateurs', 'users.type_utilisateur_id', '=', 'type_utilisateurs.id')
-                            ->select('users.*', 'type_utilisateurs.role')
+                            ->select('users.*', 'type_utilisateurs.role')->orderBy('id', 'DESC')
                             ->get();
 
         if(count($utilisateur)>0){
@@ -38,6 +38,81 @@ class GestionUtilisateur extends Controller
             ]);
         }
     }
+
+    public function count(){
+        $User = count(User::all());
+        return response()->json(
+            [
+                'code'=>200,
+                'client'=>$User,
+                'message'=>'Got the clients  successfully'
+            ]);
+    }
+
+
+    public function trashs(){
+        $utilisateur = User::onlyTrashed()->orderBy('deleted_at','asc')->get();
+
+        if(count($utilisateur)>0){
+            return response()->json(
+                [
+                    'code'=>200,
+                    'client'=>$utilisateur,
+                    'message'=>'Got the users  successfully'
+                ]);
+        }else{
+            return response()->json([
+                'code'=>404,
+                'message'=>'No user found',
+                'body'=>[],
+            ]);
+        }
+    }
+
+
+    public function restore($id){
+        $utilisateur = User::withTrashed()->where('id',$id);
+
+        if($utilisateur){
+            $utilisateur->restore();
+            return response()->json(
+                [
+                    'code'=>200,
+                    'user'=>$utilisateur,
+                    'message'=>'Restored the users  successfully'
+                ]);
+        }else{
+            return response()->json([
+                'code'=>404,
+                'message'=>'No user found',
+                'body'=>[],
+            ]);
+        }
+
+
+    }
+
+    public function del($id){
+        $utilisateur = User::onlyTrashed()->where('id',$id);
+
+        if($utilisateur){
+            $utilisateur->forceDelete();
+            return response()->json(
+                [
+                    'code'=>200,
+                    'user'=>$utilisateur,
+                    'message'=>'Deleted the users  successfully'
+                ]);
+        }else{
+            return response()->json([
+                'code'=>404,
+                'message'=>'No user found',
+                'body'=>[],
+            ]);
+        }
+
+    }
+
 
     /**
      * Show the form for creating a new resource.

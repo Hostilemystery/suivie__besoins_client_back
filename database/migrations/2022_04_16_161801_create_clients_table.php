@@ -19,6 +19,8 @@ class CreateClientsTable extends Migration
             $table->string('number');
             $table->string('neighborhood');
             $table->string('email');
+            $table->longText('detaille_service');
+            $table->foreignId('service_id')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
         });

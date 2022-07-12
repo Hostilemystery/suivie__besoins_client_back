@@ -14,6 +14,7 @@ class Notification extends Model
 
     protected $fillable = [
         'activite_id',
+        'email',
         'content',
     ];
 

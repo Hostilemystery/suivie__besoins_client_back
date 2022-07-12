@@ -15,7 +15,8 @@ class CreateNotificationsTable extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('activite_id')->constrained();
+            // $table->foreignId('activite_id')->default();
+            $table->string('email');
             $table->string('content');
             $table->timestamps();
             $table->softDeletes();

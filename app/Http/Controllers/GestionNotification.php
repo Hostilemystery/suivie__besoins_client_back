@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\Notifications;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class GestionNotification extends Controller
@@ -32,6 +34,14 @@ class GestionNotification extends Controller
         }
     }
 
+
+
+
+    // public function mail($mail)
+    // {
+    //     Mail::to($mail)->send(new Notifications());
+    //     return view('welcome');
+    // }
     /**
      * Show the form for creating a new resource.
      *
@@ -51,31 +61,54 @@ class GestionNotification extends Controller
     public function store(Request $request)
     {
         try {
-            
-            $request->validate([
-                'content'=>'required',
-            ]);
-            
 
-            $notification = new Notification();
-            $notification->activite_id = $request->activite_id;
-            $notification->content = $request->content;
+            // $request->validate([
+            //     'content'=>'required',
+            // ]);
 
-            if ($notification->save()) {
-                return response()->json(
-                    [
-                        'code'=>200,
-                        'message'=>'Notification added successfully',
-                        'body'=>$notification
-                    ]
+                $mail= $request->email;
+                $subject=$request->subject;
+                $data= array(
+                    "subject"=> $request->subject,
+                   "message"=> $request->content,
+                   "document"=>$request->document
                 );
-            } else {
-                return response()->json([
-                    'code'=>500,
-                    'message'=>'error occure when saving notification',
-                    'body'=>[]
-                ]);
-            }
+                Mail::to($mail)->send(new Notifications($data));
+                if(Mail::failures()!=0){
+
+                    return response()->json(
+                                [
+                                    'code'=>200,
+                                    'message'=>'Notification added successfully',
+                                    'body'=>[$mail,$data]
+                                ]
+                            );
+                }else {
+                        return response()->json([
+                            'code'=>500,
+                            'message'=>'error occure when sending notification',
+                            'body'=>[]
+                        ]);
+                    }
+            // $notification = new Notification();
+            // $notification->activite_id = $request->activite_id;
+            // $notification->content = $request->content;
+
+            // if ($notification->save()) {
+            //     return response()->json(
+            //         [
+            //             'code'=>200,
+            //             'message'=>'Notification added successfully',
+            //             'body'=>$notification
+            //         ]
+            //     );
+            // } else {
+            //     return response()->json([
+            //         'code'=>500,
+            //         'message'=>'error occure when saving notification',
+            //         'body'=>[]
+            //     ]);
+            // }
 
         } catch (ValidationException $e) {
             return response()->json([
@@ -131,7 +164,7 @@ class GestionNotification extends Controller
     public function update(Request $request, $id)
     {
         try {
-            
+
             $request->validate([
                 'content'=>'required',
             ]);
@@ -174,14 +207,14 @@ class GestionNotification extends Controller
     {
         $notification = Notification::find($id);
             if($notification){
-                $notification->delete(); 
+                $notification->delete();
                 return response()->json(
                     [
                         'code'=>200,
                         'message'=>'Client deleted successfully',
                         'body'=>$notification
                     ]
-                );   
+                );
             }else {
                 return response()->json([
                     'code'=>404,

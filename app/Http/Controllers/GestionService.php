@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use PDF;
 
 class GestionService extends Controller
 {
@@ -15,7 +18,7 @@ class GestionService extends Controller
      */
     public function index()
     {
-        $service = Service::all();
+        $service = Service::orderBy('id', 'DESC')->get();;
         if(count($service) > 0){
             return response()->json(
                 [
@@ -32,6 +35,16 @@ class GestionService extends Controller
         }
     }
 
+
+    public function count(){
+        $Service = count(Service::all());
+        return response()->json(
+            [
+                'code'=>200,
+                'client'=>$Service,
+                'message'=>'Got the clients  successfully'
+            ]);
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -51,16 +64,23 @@ class GestionService extends Controller
     public function store(Request $request)
     {
         try {
-            
+
             $request->validate([
-                'utilisateur_id'=>'required',
-                'Service_Name'=>'required'
+                'Service_Name'=>'required',
+                'Info_Service'=>'required',
+                'image'=>'required'
             ]);
-            
+
 
             $service = new Service();
-            $service->utilisateur_id = $request->utilisateur_id;
             $service->Service_Name = $request->Service_Name;
+            $service->Info_Service = $request->Info_Service;
+            $completeFileName = $request->file('image')->getClientOriginalName();
+            $fileNameOnly = pathinfo($completeFileName, PATHINFO_FILENAME);
+            $extension = $request->file('image')->getClientOriginalExtension();
+            $comPic= str_replace('','_',$fileNameOnly).'_'.rand().'_'.time().'.'.$extension;
+            $path = $request->file('image')->storeAs('public/posts',$comPic);
+            $service->image = $comPic;
 
             if ($service->save()) {
                 return response()->json(
@@ -95,12 +115,15 @@ class GestionService extends Controller
      */
     public function show($id)
     {
-        $service = Service::find($id);
+
+
+
+        $service = Client::where('service_id',$id)->get();
         if($service){
             return response()->json([
                 'code'=>200,
                 'service'=>$service,
-                'Message'=>'voisi les information du service '.$service->Service_Name,
+                'Message'=>'voisi les information du service '
             ]);
         }else{
             return response()->json([
@@ -132,20 +155,25 @@ class GestionService extends Controller
     public function update(Request $request, $id)
     {
         try {
-            
+
             $request->validate([
-                'utilisateur_id',
-                'client_id',
-                'Service_Name'
+                'Service_Name',
+                'Info_Service'=>'required',
+                'image'=>'required'
             ]);
-            
+
 
             $service = Service::find($id);
 
             if ($service) {
-            $service->utilisateur_id = $request->utilisateur_id;
-            $service->client_id = $request->client_id;
             $service->Service_Name = $request->Service_Name;
+            $service->Info_Service = $request->Info_Service;
+            $completeFileName = $request->file('image')->getClientOriginalName();
+            $fileNameOnly = pathinfo($completeFileName, PATHINFO_FILENAME);
+            $extension = $request->file('image')->getClientOriginalExtension();
+            $comPic= str_replace('','_',$fileNameOnly).'_'.rand().'_'.time().'.'.$extension;
+            $path = $request->file('image')->storeAs('public/posts',$comPic);
+            $service->image = $comPic;
             $service->update();
             return response()->json(
                 [
@@ -181,14 +209,14 @@ class GestionService extends Controller
     {
         $service = Service::find($id);
             if($service){
-                $service->delete(); 
+                $service->delete();
                 return response()->json(
                     [
                         'code'=>200,
                         'message'=>'Service deleted successfully',
                         'body'=>$service
                     ]
-                );   
+                );
             }else {
                 return response()->json([
                     'code'=>404,
@@ -196,5 +224,17 @@ class GestionService extends Controller
                     'body'=>[]
                 ]);
             }
+    }
+
+    public function pdfs($id)
+    {
+        $path= base_path('logoLis.jpg');
+        $type =pathInfo($path,PATHINFO_EXTENSION);
+        $data= file_get_contents($path);
+        $pic = 'data:image/'. $type. ';base64,'. base64_encode($data);
+        $service = Client::where('service_id',$id)->get();
+
+        $pdf = PDF::loadView('pdf.service', compact('service','pic'));
+        return $pdf->download('clientS.pdf');
     }
 }

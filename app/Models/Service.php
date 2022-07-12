@@ -15,7 +15,8 @@ class Service extends Model
 
     protected $fillable = [
         'utilisateur_id',
-        'Service_Name',
+        'image',
+        'Info_Service',
     ];
 
     public function activites()

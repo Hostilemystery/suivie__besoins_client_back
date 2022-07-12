@@ -42,11 +42,11 @@ class Connexion extends Controller
                 // $2y$10$E1QMtM4FT5pwL7qVxOHTMOP0GQH5PwCL09WuU1s8sJTPyKHF6.bB.
 
                 // $b
-                
+
                 // return response()->json([
                 //     //
                 // ]);
-                
+
                 if (!$val) {
                     return response()->json([
                         'code' => 403,
@@ -67,7 +67,7 @@ class Connexion extends Controller
                         'message' => 'connected',
                         'body' => [
                             'user' => $user,
-                            'accessToken' => $accessToken
+                            'access_token' => $accessToken
                         ]
                     ]);
                 }
